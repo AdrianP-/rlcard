@@ -1,8 +1,9 @@
 from enum import Enum
-
+import time
 import numpy as np
 from copy import deepcopy
 from rlcard.games.limitholdem.game import LimitholdemGame
+from rlcard.games.nolimitholdem import montecarlo_python
 
 from rlcard.games.nolimitholdem.dealer import NolimitholdemDealer as Dealer
 from rlcard.games.nolimitholdem.player import NolimitholdemPlayer as Player
@@ -166,6 +167,11 @@ class NolimitholdemGame(LimitholdemGame):
         state['current_player'] = self.game_pointer
         state['pot'] = self.pot
         state['stage'] = self.stage
+
+        simulator = montecarlo_python.MonteCarlo()
+        simulator.run_montecarlo(original_player_card_list=[[card[::-1] for card in state["hand"]]], original_table_card_list=[card[::-1] for card in state["public_cards"]], player_amount=2, maxRuns=1000, timeout=time.time() + 1, ghost_cards='', opponent_range=1, ui="")
+        state['equity'] = simulator.equity
+
         return state
 
     def step_back(self):

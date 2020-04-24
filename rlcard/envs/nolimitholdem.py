@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import numpy as np
@@ -18,7 +19,7 @@ class NolimitholdemEnv(Env):
         self.game = Game()
         super().__init__(config)
         self.actions = Action
-        self.state_shape = [54]
+        self.state_shape = [8]
         # for raise_amount in range(1, self.game.init_chips+1):
         #     self.actions.append(raise_amount)
 
@@ -49,17 +50,25 @@ class NolimitholdemEnv(Env):
         legal_actions = [action.value for action in state['legal_actions']]
         extracted_state['legal_actions'] = legal_actions
 
-        public_cards = state['public_cards']
-        hand = state['hand']
+        # public_cards = state['public_cards']
+        # hand = state['hand']
         my_chips = state['my_chips']
         all_chips = state['all_chips']
-        cards = public_cards + hand
-        idx = [self.card2index[card] for card in cards]
-        obs = np.zeros(54)
-        obs[idx] = 1
-        obs[52] = float(my_chips)
-        obs[53] = float(max(all_chips))
-        extracted_state['obs'] = obs
+        # cards = public_cards + hand
+        # idx = [self.card2index[card] for card in cards]
+        # obs = np.zeros(54)
+        obs = []
+        # obs[idx] = 1
+        # obs[52] = float(my_chips)
+        # obs[53] = float(max(all_chips))
+        obs.append([my_chips])
+        obs.append(all_chips)
+        obs.append(state['stakes'])
+        obs.append([state['pot']])
+        obs.append([state['stage'].value])
+        obs.append([state['equity']])
+
+        extracted_state['obs'] = list(itertools.chain(*obs))
 
         if self.allow_raw_data:
             extracted_state['raw_obs'] = state
