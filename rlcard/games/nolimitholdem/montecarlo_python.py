@@ -412,25 +412,25 @@ def get_equity(player_cards, table_cards, players, runs):
     return simulation.equity
 
 
-if __name__ == '__main__':
-    Simulation = MonteCarlo()
-    log = logging.getLogger('Montecarlo main')
-    log.setLevel(logging.DEBUG)
-    # my_cards = [['2D', 'AD']]
-    # cards_on_table = ['3S', 'AH', '8D']
-    # my_cards = [['KS', 'KC']]
-    my_cards = [{'AKO', 'AA'}]
-    cards_on_table = ['3D', '9H', 'AS', '7S', 'QH']
-    players = 3
-    secs = 5
-    maxruns = 10000
-    start_time = time.time()
-    timeout = start_time + secs
-    ghost_cards = ''
-    Simulation.run_montecarlo(my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=maxruns,
-                              ghost_cards=ghost_cards, timeout=timeout, opponent_range=0.25)
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print("Runs: " + str(Simulation.runs))
-    print("Passes: " + str(Simulation.passes))
-    equity = Simulation.equity  # considering draws as wins
-    print("Equity: " + str(equity))
+# if __name__ == '__main__':
+#     Simulation = MonteCarlo()
+#     log = logging.getLogger('Montecarlo main')
+#     log.setLevel(logging.DEBUG)
+#     # my_cards = [['2D', 'AD']]
+#     # cards_on_table = ['3S', 'AH', '8D']
+#     # my_cards = [['KS', 'KC']]
+#     my_cards = [{'AKO', 'AA'}]
+#     cards_on_table = ['3D', '9H', 'AS', '7S', 'QH']
+#     players = 3
+#     secs = 5
+#     maxruns = 10000
+#     start_time = time.time()
+#     timeout = start_time + secs
+#     ghost_cards = ''
+#     Simulation.run_montecarlo(my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=maxruns,
+#                               ghost_cards=ghost_cards, timeout=timeout, opponent_range=0.25)
+#     print("--- %s seconds ---" % (time.time() - start_time))
+#     print("Runs: " + str(Simulation.runs))
+#     print("Passes: " + str(Simulation.passes))
+#     equity = Simulation.equity  # considering draws as wins
+#     print("Equity: " + str(equity))

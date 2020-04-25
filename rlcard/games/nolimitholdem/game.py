@@ -167,9 +167,13 @@ class NolimitholdemGame(LimitholdemGame):
         state['current_player'] = self.game_pointer
         state['pot'] = self.pot
         state['stage'] = self.stage
-
+        # # a = time.time()
         simulator = montecarlo_python.MonteCarlo()
-        simulator.run_montecarlo(original_player_card_list=[[card[::-1] for card in state["hand"]]], original_table_card_list=[card[::-1] for card in state["public_cards"]], player_amount=2, maxRuns=1000, timeout=time.time() + 1, ghost_cards='', opponent_range=1, ui="")
+        simulator.run_montecarlo(original_player_card_list=[[card[::-1] for card in state["hand"]]],
+                                 original_table_card_list=[card[::-1] for card in state["public_cards"]],
+                                 player_amount=2, maxRuns=100, timeout=time.time() + 0.5, ghost_cards='', opponent_range=1, ui="")
+        # b = time.time()
+        # # print("total time procesing: ",b-a)
         state['equity'] = simulator.equity
 
         return state
