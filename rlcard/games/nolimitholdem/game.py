@@ -4,6 +4,7 @@ import numpy as np
 from copy import deepcopy
 from rlcard.games.limitholdem.game import LimitholdemGame
 from rlcard.games.nolimitholdem import montecarlo_python
+from rlcard.games.limitholdem.player import PlayerStatus
 
 from rlcard.games.nolimitholdem.dealer import NolimitholdemDealer as Dealer
 from rlcard.games.nolimitholdem.player import NolimitholdemPlayer as Player
@@ -62,7 +63,6 @@ class NolimitholdemGame(LimitholdemGame):
 
         # Initilize public cards
         self.public_cards = []
-        self.pot = 0
         self.stage = Stage.PREFLOP
 
         # Randomly choose a big blind and a small blind
@@ -76,7 +76,7 @@ class NolimitholdemGame(LimitholdemGame):
 
         # Initilize a bidding round, in the first round, the big blind and the small blind needs to
         # be passed to the round for processing.
-        self.round = Round(self.num_players, self.big_blind)
+        self.round = Round(self.num_players, self.big_blind, dealer=self.dealer)
 
         self.round.start_new_round(game_pointer=self.game_pointer, raised=[p.in_chips for p in self.players])
 
@@ -112,6 +112,8 @@ class NolimitholdemGame(LimitholdemGame):
         '''
 
         if action not in self.get_legal_actions():
+            print(action, self.get_legal_actions())
+            print(self.get_state(self.game_pointer))
             raise Exception('Action not allowed')
 
         if self.allow_step_back:
@@ -125,8 +127,9 @@ class NolimitholdemGame(LimitholdemGame):
             self.history.append((r, b, r_c, d, p, ps))
 
         # Then we proceed to the next round
-        self.pot = np.sum([player.in_chips for player in self.players])
-        self.game_pointer = self.round.proceed_round(self.players, action, self.pot)
+        self.game_pointer = self.round.proceed_round(self.players, action)
+
+        players_in_bypass = [1 if player.status in (PlayerStatus.FOLDED, PlayerStatus.ALLIN) else 0 for player in self.players]
 
         # If a round is over, we deal more public cards
         if self.round.is_over():
@@ -136,13 +139,28 @@ class NolimitholdemGame(LimitholdemGame):
                 self.public_cards.append(self.dealer.deal_card())
                 self.public_cards.append(self.dealer.deal_card())
                 self.public_cards.append(self.dealer.deal_card())
+                if len(self.players) == np.sum(players_in_bypass):
+                    self.round_counter += 1
+                    self.stage = Stage.TURN
+                    self.public_cards.append(self.dealer.deal_card())
+                    self.round_counter += 1
+                    self.stage = Stage.RIVER
+                    self.public_cards.append(self.dealer.deal_card())
+                    self.round_counter += 1
             # For the following rounds, we deal only 1 card
             elif self.round_counter == 1:
                 self.stage = Stage.TURN
                 self.public_cards.append(self.dealer.deal_card())
+                if len(self.players) == np.sum(players_in_bypass):
+                    self.round_counter += 1
+                    self.stage = Stage.RIVER
+                    self.public_cards.append(self.dealer.deal_card())
+                    self.round_counter += 1
             elif self.round_counter == 2:
                 self.stage = Stage.RIVER
                 self.public_cards.append(self.dealer.deal_card())
+                if len(self.players) == np.sum(players_in_bypass):
+                    self.round_counter += 1
 
             self.round_counter += 1
             self.round.start_new_round(self.game_pointer)
@@ -151,7 +169,7 @@ class NolimitholdemGame(LimitholdemGame):
 
         return state, self.game_pointer
 
-    def get_state(self, player):
+    def get_state(self, player_id):
         ''' Return player's state
 
         Args:
@@ -160,12 +178,14 @@ class NolimitholdemGame(LimitholdemGame):
         Returns:
             (dict): The state of the player
         '''
+        self.dealer.pot = np.sum([player.in_chips for player in self.players])
+
         chips = [self.players[i].in_chips for i in range(self.num_players)]
         legal_actions = self.get_legal_actions()
-        state = self.players[player].get_state(self.public_cards, chips, legal_actions)
+        state = self.players[player_id].get_state(self.public_cards, chips, legal_actions)
         state['stakes'] = [self.players[i].remained_chips for i in range(self.num_players)]
         state['current_player'] = self.game_pointer
-        state['pot'] = self.pot
+        state['pot'] = self.dealer.pot
         state['stage'] = self.stage
         # # a = time.time()
         simulator = montecarlo_python.MonteCarlo()
@@ -195,7 +215,7 @@ class NolimitholdemGame(LimitholdemGame):
         Returns:
             (list): Each entry corresponds to the payoff of one player
         '''
-        hands = [p.hand + self.public_cards if p.status == 'alive' else None for p in self.players]
+        hands = [p.hand + self.public_cards if p.status in (PlayerStatus.ALIVE, PlayerStatus.ALLIN) else None for p in self.players]
         chips_payoffs = self.judger.judge_game(self.players, hands)
         return chips_payoffs
 

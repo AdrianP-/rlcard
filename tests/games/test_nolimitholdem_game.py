@@ -1,5 +1,6 @@
 import unittest
 
+from rlcard.games.limitholdem.player import PlayerStatus
 from rlcard.games.nolimitholdem.game import NolimitholdemGame as Game, Stage
 import numpy as np
 
@@ -25,9 +26,10 @@ class TestNolimitholdemMethods(unittest.TestCase):
         self.assertEqual(init_not_raise_num + 1, step_not_raise_num)
 
         # test fold
-        game.init_game()
+        _, player_id = game.init_game()
         game.step(Action.FOLD)
-        self.assertTrue(game.round.player_folded)
+
+        self.assertEqual(PlayerStatus.FOLDED, game.players[player_id].status)
 
         # test check
         game.init_game()
@@ -35,25 +37,48 @@ class TestNolimitholdemMethods(unittest.TestCase):
         game.step(Action.CHECK)
         self.assertEqual(game.round_counter, 1)
 
+    def test_bet_more_than_chips(self):
+        game = Game()
+
+        # test check
+        game.init_game()
+        player = game.players[0]
+        in_chips = player.in_chips
+        player.bet(50)
+        self.assertEqual(50+in_chips, player.in_chips)
+
+        player.bet(150)
+        self.assertEqual(100, player.in_chips)
+
     def test_step_2(self):
         game = Game()
 
         # test check
         game.init_game()
-        self.assertEqual(Stage.PREFLOP, game.stage.PREFLOP)
+        self.assertEqual(Stage.PREFLOP, game.stage)
         game.step(Action.CALL)
         game.step(Action.RAISE_POT)
         game.step(Action.CALL)
 
-        self.assertEqual(Stage.FLOP, game.stage.FLOP)
+        self.assertEqual(Stage.FLOP, game.stage)
         game.step(Action.CHECK)
         game.step(Action.CHECK)
 
-        self.assertEqual(Stage.TURN, game.stage.TURN)
+        self.assertEqual(Stage.TURN, game.stage)
         game.step(Action.CHECK)
         game.step(Action.CHECK)
 
-        self.assertEqual(Stage.RIVER, game.stage.RIVER)
+        self.assertEqual(Stage.RIVER, game.stage)
+
+    def test_auto_step(self):
+        game = Game()
+
+        game.init_game()
+        self.assertEqual(Stage.PREFLOP, game.stage)
+        game.step(Action.ALL_IN)
+        game.step(Action.CALL)
+
+        self.assertEqual(Stage.RIVER, game.stage)
 
     def test_all_in(self):
         game = Game()
@@ -78,9 +103,8 @@ class TestNolimitholdemMethods(unittest.TestCase):
         game.step(Action.ALL_IN)
         self.assertListEqual([Action.CALL, Action.FOLD], game.get_legal_actions())
         game.step(Action.CALL)
-        self.assertEqual(game.round_counter, 2)
-        # SHOULD FINISH THE GAME, NOT WAIT FOR AN ACTION
-        # self.assertListEqual([], game.get_legal_actions())
+        self.assertEqual(game.round_counter, 4)
+        self.assertEqual(200, game.dealer.pot)
 
     def test_wrong_steps(self):
         game = Game()
