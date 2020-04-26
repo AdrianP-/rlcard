@@ -1,6 +1,8 @@
 import itertools
 import json
 import os
+import time
+
 import numpy as np
 
 import rlcard
@@ -69,12 +71,13 @@ class NolimitholdemEnv(Env):
         obs.append([state['equity']])
 
         extracted_state['obs'] = list(itertools.chain(*obs))
-
+        extracted_state['ts'] = time.time()
         if self.allow_raw_data:
             extracted_state['raw_obs'] = state
             extracted_state['raw_legal_actions'] = [a for a in state['legal_actions']]
         if self.record_action:
             extracted_state['action_record'] = self.action_recorder
+
         return extracted_state
 
     def get_payoffs(self):

@@ -15,9 +15,9 @@ env = rlcard.make('no-limit-holdem')
 eval_env = rlcard.make('no-limit-holdem')
 
 # Set the iterations numbers and how frequently we evaluate the performance
-evaluate_every = 100
-evaluate_num = 1000
-episode_num = 100000
+evaluate_every = 50
+evaluate_num = 10
+episode_num = 10000
 
 # The intial memory size
 memory_init_size = 1000
@@ -30,6 +30,7 @@ log_dir = './experiments/nolimit_holdem_dqn_result/'
 
 # Set a global seed
 set_global_seed(0)
+
 
 with tf.Session() as sess:
 
@@ -59,6 +60,8 @@ with tf.Session() as sess:
         # Generate data from the environment
         trajectories, _ = env.run(is_training=True)
 
+        # print(f"============ EPISODE {episode} ==============")
+        # print_history(trajectories)
         # Feed transitions into agent memory, and train the agent
         for ts in trajectories[0]:
             agent.feed(ts)
@@ -66,6 +69,9 @@ with tf.Session() as sess:
         # Evaluate the performance. Play with random agents.
         if episode % evaluate_every == 0:
             logger.log_performance(env.timestep, tournament(eval_env, evaluate_num)[0])
+        #
+        # print()
+        # print()
 
     # Close files in the logger
     logger.close_files()

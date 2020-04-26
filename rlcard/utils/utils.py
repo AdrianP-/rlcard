@@ -381,11 +381,27 @@ def tournament(env, num):
         A list of avrage payoffs for each player
     '''
     payoffs = [0 for _ in range(env.player_num)]
-    for _ in range(num):
-        _, _payoffs = env.run(is_training=False)
+    for episode in range(num):
+        print(f"============ EPISODE evaluation {episode} ==============")
+        trajectories, _payoffs = env.run(is_training=False)
+        print_history(trajectories=trajectories,env=env)
+        print()
+        print()
         for i in range(len(payoffs)):
             payoffs[i] += _payoffs[i]
     for i in range(len(payoffs)):
         payoffs[i] /= num
     return payoffs
 
+def print_history(trajectories,env):
+
+    l = []
+    i = 0
+    for player_trajectories in trajectories:
+        for ts in player_trajectories:
+            l.append({"player": i, "state": ts[0], "ts": ts[0]["ts"], "action": env.actions(ts[1]), "reward": ts[2], "done": ts[4]})
+        i += 1
+
+    l.sort(key=lambda it: it["ts"])
+    for info in l:
+        print(info)
