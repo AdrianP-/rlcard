@@ -26,7 +26,7 @@ memory_init_size = 1000
 train_every = 1
 
 # The paths for saving the logs and learning curves
-log_dir = './experiments/nolimit_holdem_dqn_result/'
+log_dir = './experiments/nolimit_holdem_dqn_result_2/'
 
 # Set a global seed
 set_global_seed(0)
@@ -45,7 +45,9 @@ with tf.Session() as sess:
                      train_every=train_every,
                      state_shape=env.state_shape,
                      mlp_layers=[512, 512])
+
     random_agent = RandomAgent(action_num=eval_env.action_num)
+
     env.set_agents([agent, random_agent])
     eval_env.set_agents([agent, random_agent])
 
@@ -69,9 +71,7 @@ with tf.Session() as sess:
         # Evaluate the performance. Play with random agents.
         if episode % evaluate_every == 0:
             logger.log_performance(env.timestep, tournament(eval_env, evaluate_num)[0])
-        #
-        # print()
-        # print()
+
 
     # Close files in the logger
     logger.close_files()
@@ -85,4 +85,3 @@ with tf.Session() as sess:
         os.makedirs(save_dir)
     saver = tf.train.Saver()
     saver.save(sess, os.path.join(save_dir, 'model'))
-    

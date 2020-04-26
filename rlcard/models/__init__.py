@@ -19,7 +19,11 @@ if 'torch' in installed_packages:
 
 register(
     model_id = 'leduc-holdem-cfr',
-    entry_point='rlcard.models.pretrained_models:LeducHoldemCFRModel')
+    entry_point='rlcard.models.pretrained_models:NolimitHoldemDQNModel')
+
+register(
+    model_id = 'nolimit_holdem_dqn',
+    entry_point='rlcard.models.pretrained_models:NolimitHoldemDQNModel')
 
 register(
     model_id = 'leduc-holdem-rule-v1',

@@ -5,6 +5,7 @@ import os
 
 import rlcard
 from rlcard.agents.cfr_agent import CFRAgent
+from rlcard.agents.dqn_agent import DQNAgent
 from rlcard.models.model import Model
 
 # Root path of pretrianed models
@@ -35,6 +36,49 @@ class LeducHoldemNFSPModel(Model):
                 self.nfsp_agents.append(agent)
 
         check_point_path = os.path.join(ROOT_PATH, 'leduc_holdem_nfsp')
+        with self.sess.as_default():
+            with self.graph.as_default():
+                saver = tf.train.Saver()
+                saver.restore(self.sess, tf.train.latest_checkpoint(check_point_path))
+    @property
+    def agents(self):
+        ''' Get a list of agents for each position in a the game
+
+        Returns:
+            agents (list): A list of agents
+
+        Note: Each agent should be just like RL agent with step and eval_step
+              functioning well.
+        '''
+        return self.nfsp_agents
+
+class NolimitHoldemDQNModel(Model):
+    ''' A pretrained model on Leduc Holdem with NFSP
+    '''
+
+    def __init__(self):
+        ''' Load pretrained model
+        '''
+        import tensorflow as tf
+        from rlcard.agents.nfsp_agent import NFSPAgent
+        self.graph = tf.Graph()
+        self.sess = tf.Session(graph=self.graph)
+
+        env = rlcard.make('no-limit-holdem')
+        with self.graph.as_default():
+            self.nfsp_agents = []
+            for i in range(1):
+                agent = DQNAgent(self.sess,
+                                 scope='dqn',
+                                 action_num=env.action_num,
+                                 replay_memory_init_size=1000,
+                                 train_every=1,
+                                 state_shape=env.state_shape,
+                                 mlp_layers=[512, 512])
+                self.nfsp_agents.append(agent)
+
+        # check_point_path = os.path.join(ROOT_PATH, 'nolimit_holdem_dqn')
+        check_point_path = "/Users/adrianportabalesgoberna/projects/poker/rlcard/examples/models/nolimit_holdem_dqn"
         with self.sess.as_default():
             with self.graph.as_default():
                 saver = tf.train.Saver()

@@ -15,15 +15,15 @@ env = rlcard.make('no-limit-holdem')
 eval_env = rlcard.make('no-limit-holdem')
 
 # Set the iterations numbers and how frequently we evaluate the performance
-evaluate_every = 10000
-evaluate_num = 10000
-episode_num = 100000
+evaluate_every = 50
+evaluate_num = 10
+episode_num = 10000
 
 # The intial memory size
 memory_init_size = 1000
 
 # Train the agent every X steps
-train_every = 64
+train_every = 32
 
 # The paths for saving the logs and learning curves
 log_dir = './experiments/nolimit_holdem_nfsp_result/'
