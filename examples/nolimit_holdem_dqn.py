@@ -9,24 +9,25 @@ from rlcard.agents.dqn_agent import DQNAgent
 from rlcard.agents.random_agent import RandomAgent
 from rlcard.utils.utils import set_global_seed, tournament
 from rlcard.utils.logger import Logger
+from rlcard import models
 
 # Make environment
 env = rlcard.make('no-limit-holdem')
 eval_env = rlcard.make('no-limit-holdem')
 
 # Set the iterations numbers and how frequently we evaluate the performance
-evaluate_every = 50
+evaluate_every = 100
 evaluate_num = 10
-episode_num = 10000
+episode_num = 100000
 
 # The intial memory size
-memory_init_size = 1000
+memory_init_size = 5000
 
 # Train the agent every X steps
 train_every = 1
 
 # The paths for saving the logs and learning curves
-log_dir = './experiments/nolimit_holdem_dqn_result_2/'
+log_dir = './experiments/nolimit_holdem_dqn_result/'
 
 # Set a global seed
 set_global_seed(0)
@@ -46,8 +47,8 @@ with tf.Session() as sess:
                      state_shape=env.state_shape,
                      mlp_layers=[512, 512])
 
+    # dqn_agent = models.load('nolimit_holdem_dqn').agents[0]
     random_agent = RandomAgent(action_num=eval_env.action_num)
-
     env.set_agents([agent, random_agent])
     eval_env.set_agents([agent, random_agent])
 

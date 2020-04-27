@@ -382,11 +382,11 @@ def tournament(env, num):
     '''
     payoffs = [0 for _ in range(env.player_num)]
     for episode in range(num):
-        print(f"============ EPISODE evaluation {episode} ==============")
+        # print(f"============ EPISODE evaluation {episode} ==============")
         trajectories, _payoffs = env.run(is_training=False)
-        print_history(trajectories=trajectories,env=env)
-        print()
-        print()
+        # print_history(trajectories=trajectories,env=env)
+        # print()
+        # print()
         for i in range(len(payoffs)):
             payoffs[i] += _payoffs[i]
     for i in range(len(payoffs)):
