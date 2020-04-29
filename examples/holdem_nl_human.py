@@ -11,9 +11,9 @@ from rlcard.utils.utils import print_card
 # Set 'record_action' to True because we need it to print results
 env = rlcard.make('no-limit-holdem', config={'record_action': True})
 
-# dqn_agent = models.load('nolimit_holdem_dqn').agents[0]
+agent = models.load('nolimit_holdem_dqn').agents[0]
 human_agent = HumanAgent(env.action_num)
-agent = RandomAgent(action_num=env.action_num)
+# agent = RandomAgent(action_num=env.action_num)
 
 env.set_agents([human_agent, agent])
 
@@ -36,8 +36,14 @@ while (True):
         print('>> Player', pair[0], 'chooses', pair[1])
 
     # Let's take a look at what the agent card is
+    print('===============     Table    ===============')
+    print_card(env.get_perfect_information()['public_card'])
+
     print('===============     Cards all Players    ===============')
-    for hands in env.get_perfect_information()['hand_cards']:
+    print("your cards:")
+    print_card(env.get_perfect_information()['hand_cards'][0])
+    print("opponent cards:")
+    for hands in env.get_perfect_information()['hand_cards'][1:]:
         print_card(hands)
 
     print('===============     Result     ===============')
