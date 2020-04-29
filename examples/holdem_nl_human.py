@@ -11,11 +11,11 @@ from rlcard.utils.utils import print_card
 # Set 'record_action' to True because we need it to print results
 env = rlcard.make('no-limit-holdem', config={'record_action': True})
 
-dqn_agent = models.load('nolimit_holdem_dqn').agents[0]
+# dqn_agent = models.load('nolimit_holdem_dqn').agents[0]
 human_agent = HumanAgent(env.action_num)
-# random_agent = RandomAgent(action_num=env.action_num)
+agent = RandomAgent(action_num=env.action_num)
 
-env.set_agents([human_agent, dqn_agent])
+env.set_agents([human_agent, agent])
 
 
 while (True):
