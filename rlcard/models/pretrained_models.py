@@ -77,8 +77,7 @@ class NolimitHoldemDQNModel(Model):
                                  mlp_layers=[512, 512])
                 self.nfsp_agents.append(agent)
 
-        # check_point_path = os.path.join(ROOT_PATH, 'nolimit_holdem_dqn')
-        check_point_path = "/Users/adrianportabalesgoberna/projects/poker/rlcard/examples/models/nolimit_holdem_dqn4"
+        check_point_path = os.path.join(ROOT_PATH, '../../../examples/models/nolimit_holdem_dqn4')
         with self.sess.as_default():
             with self.graph.as_default():
                 saver = tf.train.Saver()
