@@ -21,7 +21,7 @@ evaluate_num = 10
 episode_num = 100000
 
 # The intial memory size
-memory_init_size = 5000
+memory_init_size = 1000
 
 # Train the agent every X steps
 train_every = 1
