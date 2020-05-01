@@ -43,8 +43,9 @@ while (True):
     print("your cards:")
     print_card(env.get_perfect_information()['hand_cards'][0])
     print("opponent cards:")
-    for hands in env.get_perfect_information()['hand_cards'][1:]:
-        print_card(hands)
+    if abs(payoffs[0]) == 100 and abs(payoffs[1]) == 100:
+        for hands in env.get_perfect_information()['hand_cards'][1:]:
+            print_card(hands)
 
     print('===============     Result     ===============')
     if payoffs[0] > 0:

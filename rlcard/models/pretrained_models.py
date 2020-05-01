@@ -94,6 +94,7 @@ class NolimitHoldemDQNModel(Model):
         '''
         return self.nfsp_agents
 
+
 class LeducHoldemNFSPPytorchModel(Model):
     ''' A pretrained PyTorch model on Leduc Holdem with NFSP
     '''
