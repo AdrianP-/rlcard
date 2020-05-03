@@ -68,7 +68,7 @@ class NolimitholdemEnv(Env):
         obs.append([state['stage'].value])
         obs.append([state['equity']])
 
-        extracted_state['obs'] = list(itertools.chain(*obs))
+        extracted_state['obs'] = np.array(list(itertools.chain(*obs)))
         extracted_state['ts'] = time.time()
 
         if self.allow_raw_data:

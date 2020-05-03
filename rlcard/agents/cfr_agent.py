@@ -73,6 +73,8 @@ class CFRAgent():
             utility = self.traverse_tree(new_probs, player_id)
             self.env.step_back()
 
+            if type(utility) == list:
+                utility = np.array(utility)
             state_utility += action_prob * utility
             action_utilities[action] = utility
 
