@@ -23,18 +23,12 @@ class TestMontecarloPython(unittest.TestCase):
                                       timeout=start_time, ghost_cards='', opponent_range=opponent_range)
             equity = simulation.equity
             total_result.append(equity * 100)
-            log.info("--- %s seconds ---" % (time.time() - start_time))
 
-            for keys, values in simulation.winTypesDict:
-                log.info(keys + ": " + (str(np.round(values * 100, 2))))
-            log.info("Equity: " + str(np.round(equity * 100, 2)))
             assert abs(sum(list(simulation.winnerCardTypeList.values())) - equity) < 0.0001
 
         stdev = np.std(total_result)
         avg = np.mean(total_result)
 
-        log.info("Mean: " + str(avg))
-        log.info("Stdev: " + str(stdev))
 
         return avg, stdev
 

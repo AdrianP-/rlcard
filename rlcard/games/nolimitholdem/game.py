@@ -184,19 +184,23 @@ class NolimitholdemGame(LimitholdemGame):
         chips = [self.players[i].in_chips for i in range(self.num_players)]
         legal_actions = self.get_legal_actions()
         state = self.players[player_id].get_state(self.public_cards, chips, legal_actions)
-        state['stakes'] = [self.players[i].remained_chips for i in range(self.num_players)]
+        state['stakes'] = [player.remained_chips for player in self.players]
+        state['bets'] = [player.in_chips for player in self.players]
         state['current_player'] = self.game_pointer
         state['pot'] = self.dealer.pot
         state['stage'] = self.stage
         # a = time.time()
-        if player_id == 0:
-            simulator = montecarlo_python.MonteCarlo()
-            simulator.run_montecarlo(original_player_card_list=[[card[::-1] for card in state["hand"]]],
-                                     original_table_card_list=[card[::-1] for card in state["public_cards"]],
-                                     player_amount=2, maxRuns=1000, timeout=time.time() + 0.5, ghost_cards='', opponent_range=1, ui="")
-            state['equity'] = simulator.equity
-        else:
-            state['equity'] = 1
+        # if player_id == 0:
+        #     simulator = montecarlo_python.MonteCarlo()
+        #     simulator.run_montecarlo(original_player_card_list=[[card[::-1] for card in state["hand"]]],
+        #                              original_table_card_list=[card[::-1] for card in state["public_cards"]],
+        #                              player_amount=2, maxRuns=1000, timeout=time.time() + 0.5, ghost_cards='', opponent_range=1, ui="")
+        #     state['equity'] = simulator.equity
+        # else:
+        state['equity'] = 1
+        max_bet = max([player.in_chips for player in self.players])
+        state['pot_odds'] = (max_bet - self.players[player_id].in_chips) / self.dealer.pot
+        state['pot_odds_decision'] = state['equity'] >= state['pot_odds']
 
         # b = time.time()
         # print("total time procesing: ",b-a)

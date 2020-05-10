@@ -68,7 +68,7 @@ class DeepCFR():
              env,
              policy_network_layers=(32, 32),
              advantage_network_layers=(32, 32),
-             num_traversals=10,
+             num_traversals=1,
              num_step=40,
              learning_rate=1e-4,
              batch_size_advantage=16,
@@ -285,6 +285,8 @@ class DeepCFR():
         return np.array([round(probs[0][i], 4) for i in range(self._num_actions)])
 
     def _traverse_game_tree(self, state, player, count = 0):
+        count += 1
+
         ''' Performs a traversal of the game tree.
 
         Over a traversal the advantage and strategy memories are populated with
@@ -310,6 +312,8 @@ class DeepCFR():
             self.traverse = []
             return payoff
 
+        print( state, player, current_player, count)
+
         if current_player == player:
             sampled_regret = collections.defaultdict(float)
             # Update the policy over the info set & actions via regret matching.
@@ -317,7 +321,7 @@ class DeepCFR():
             for action in actions:
                 child_state, _ = self._env.step(action)
                 self.traverse.append((action, state, child_state))
-                expected_payoff[action] = self._traverse_game_tree(child_state, player)
+                expected_payoff[action] = self._traverse_game_tree(child_state, player,count)
             for _ in range(self._env.player_num):
                 self._env.step_back()
 
@@ -328,6 +332,7 @@ class DeepCFR():
             for act in actions:
                 self._advantage_memories[player].add(AdvantageMemory(state['obs'].flatten(), self._iteration, sampled_regret[act], act))
             players_payoff = [max(expected_payoff[act_]) for act_ in expected_payoff.keys()]
+            print(players_payoff)
             return players_payoff
         else:
             other_player = current_player
@@ -341,7 +346,7 @@ class DeepCFR():
                 StrategyMemory(
                     state['obs'].flatten(),
                     self._iteration, strategy))
-            return self._traverse_game_tree(child_state, player)
+            return self._traverse_game_tree(child_state, player,count)
 
     def _sample_action_from_advantage(self, state, player):
         ''' Returns an info state policy by applying regret-matching.

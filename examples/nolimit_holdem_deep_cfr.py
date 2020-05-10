@@ -31,8 +31,9 @@ with tf.Session() as sess:
     agent = DeepCFR(session=sess, env=env)
     # agent.load()  # If we have saved model, we first load the model
     # agent = models.load('nolimit_holdem_dqn').agents[0]
-    agent_random = RandomAgent(action_num=env.action_num)
-    eval_env.set_agents([agent, agent_random])
+    # agent_random = RandomAgent(action_num=env.action_num)
+    agent2 = models.load('nolimit_holdem_dqn').agents[0]
+    eval_env.set_agents([agent, agent2])
 
     # Init a Logger to plot the learning curve
     logger = Logger(log_dir)
