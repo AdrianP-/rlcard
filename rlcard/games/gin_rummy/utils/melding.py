@@ -8,17 +8,18 @@ from typing import List
 
 from rlcard.core import Card
 
-import rlcard.games.gin_rummy.utils.utils as utils
+from rlcard.games.gin_rummy.utils import utils
+from rlcard.games.gin_rummy.utils.gin_rummy_error import GinRummyProgramError
 
-"""
-    Terminology:
-        run_meld - three or more cards of same suit in sequence
-        set_meld - three or more cards of same rank
-        meld_pile - a run_meld or a set_meld
-        meld_piles - a list of meld_pile
-        meld_cluster - same as meld_piles, but usually with the piles being mutually disjoint
-        meld_clusters - a list of meld_cluster
-"""
+# ===============================================================
+#    Terminology:
+#        run_meld - three or more cards of same suit in sequence
+#        set_meld - three or more cards of same rank
+#        meld_pile - a run_meld or a set_meld
+#        meld_piles - a list of meld_pile
+#        meld_cluster - same as meld_piles, but usually with the piles being mutually disjoint
+#        meld_clusters - a list of meld_cluster
+# ===============================================================
 
 
 def get_meld_clusters(hand: List[Card]) -> List[List[List[Card]]]:
@@ -50,7 +51,8 @@ def get_meld_clusters(hand: List[Card]) -> List[List[List[Card]]]:
 
 
 def get_best_meld_clusters(hand: List[Card]) -> List[List[List[Card]]]:
-    assert len(hand) == 10
+    if len(hand) != 10:
+        raise GinRummyProgramError("Hand contain {} cards: should be 10 cards.".format(len(hand)))
     result = []  # type: List[List[List[Card]]]
     meld_clusters = get_meld_clusters(hand=hand)  # type: List[List[List[Card]]]
     meld_clusters_count = len(meld_clusters)
@@ -66,7 +68,7 @@ def get_best_meld_clusters(hand: List[Card]) -> List[List[List[Card]]]:
 
 def get_all_run_melds(hand: List[Card]) -> List[List[Card]]:
     card_count = len(hand)
-    hand_by_suit = sorted(hand, key=lambda card: utils.get_card_id(card))
+    hand_by_suit = sorted(hand, key=utils.get_card_id)
     max_run_melds = []
 
     i = 0
@@ -121,7 +123,7 @@ def get_all_set_melds(hand: List[Card]) -> List[List[Card]]:
 def get_all_run_melds_for_suit(cards: List[Card], suit: str) -> List[List[Card]]:
     cards_for_suit = [card for card in cards if card.suit == suit]
     cards_for_suit_count = len(cards_for_suit)
-    cards_for_suit = sorted(cards_for_suit, key=lambda card: utils.get_card_id(card))
+    cards_for_suit = sorted(cards_for_suit, key=utils.get_card_id)
     max_run_melds = []
 
     i = 0

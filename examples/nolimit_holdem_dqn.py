@@ -5,15 +5,14 @@ import tensorflow as tf
 import os
 
 import rlcard
-from rlcard.agents.dqn_agent import DQNAgent
-from rlcard.agents.random_agent import RandomAgent
-from rlcard.utils.utils import set_global_seed, tournament
-from rlcard.utils.logger import Logger
-from rlcard import models
+from rlcard.agents import DQNAgent
+from rlcard.agents import RandomAgent
+from rlcard.utils import set_global_seed, tournament
+from rlcard.utils import Logger
 
 # Make environment
-env = rlcard.make('no-limit-holdem')
-eval_env = rlcard.make('no-limit-holdem')
+env = rlcard.make('no-limit-holdem', config={'seed': 0})
+eval_env = rlcard.make('no-limit-holdem', config={'seed': 0})
 
 # Set the iterations numbers and how frequently we evaluate the performance
 evaluate_every = 100
@@ -31,7 +30,6 @@ log_dir = './experiments/nolimit_holdem_dqn_result/'
 
 # Set a global seed
 set_global_seed(0)
-
 
 with tf.Session() as sess:
 
@@ -63,8 +61,6 @@ with tf.Session() as sess:
         # Generate data from the environment
         trajectories, _ = env.run(is_training=True)
 
-        # print(f"============ EPISODE {episode} ==============")
-        # print_history(trajectories)
         # Feed transitions into agent memory, and train the agent
         for ts in trajectories[0]:
             agent.feed(ts)
@@ -72,7 +68,6 @@ with tf.Session() as sess:
         # Evaluate the performance. Play with random agents.
         if episode % evaluate_every == 0:
             logger.log_performance(env.timestep, tournament(eval_env, evaluate_num)[0])
-
 
     # Close files in the logger
     logger.close_files()
@@ -86,3 +81,4 @@ with tf.Session() as sess:
         os.makedirs(save_dir)
     saver = tf.train.Saver()
     saver.save(sess, os.path.join(save_dir, 'model'))
+    

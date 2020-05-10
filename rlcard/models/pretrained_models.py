@@ -4,8 +4,7 @@
 import os
 
 import rlcard
-from rlcard.agents.cfr_agent import CFRAgent
-from rlcard.agents.dqn_agent import DQNAgent
+from rlcard.agents import CFRAgent
 from rlcard.models.model import Model
 
 # Root path of pretrianed models
@@ -19,7 +18,7 @@ class LeducHoldemNFSPModel(Model):
         ''' Load pretrained model
         '''
         import tensorflow as tf
-        from rlcard.agents.nfsp_agent import NFSPAgent
+        from rlcard.agents import NFSPAgent
         self.graph = tf.Graph()
         self.sess = tf.Session(graph=self.graph)
 
@@ -103,7 +102,7 @@ class LeducHoldemNFSPPytorchModel(Model):
         ''' Load pretrained model
         '''
         import torch
-        from rlcard.agents.nfsp_agent_pytorch import NFSPAgent as NFSPAgentPytorch
+        from rlcard.agents import NFSPAgentPytorch
         env = rlcard.make('leduc-holdem')
         self.nfsp_agents = []
         for i in range(env.player_num):

@@ -11,14 +11,14 @@ import os
 
 import rlcard
 
-from rlcard.agents.nfsp_agent import NFSPAgent
-from rlcard.agents.random_agent import RandomAgent
-from rlcard.utils.utils import set_global_seed, tournament
-from rlcard.utils.logger import Logger
+from rlcard.agents import NFSPAgent
+from rlcard.agents import RandomAgent
+from rlcard.utils import set_global_seed, tournament
+from rlcard.utils import Logger
 
 # Make environment
-env = rlcard.make('gin-rummy')
-eval_env = rlcard.make('gin-rummy')
+env = rlcard.make('gin-rummy', config={'seed': 0})
+eval_env = rlcard.make('gin-rummy', config={'seed': 0})
 env.game.settings.print_settings()
 
 # Set the iterations numbers and how frequently we evaluate/save plot
