@@ -312,7 +312,7 @@ class DeepCFR():
             self.traverse = []
             return payoff
 
-        print( state, player, current_player, count)
+        # print( state, player, current_player, count)
 
         if current_player == player:
             sampled_regret = collections.defaultdict(float)
@@ -332,7 +332,7 @@ class DeepCFR():
             for act in actions:
                 self._advantage_memories[player].add(AdvantageMemory(state['obs'].flatten(), self._iteration, sampled_regret[act], act))
             players_payoff = [max(expected_payoff[act_]) for act_ in expected_payoff.keys()]
-            print(players_payoff)
+            # print(players_payoff)
             return players_payoff
         else:
             other_player = current_player

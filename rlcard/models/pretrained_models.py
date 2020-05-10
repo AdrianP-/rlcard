@@ -4,7 +4,7 @@
 import os
 
 import rlcard
-from rlcard.agents import CFRAgent
+from rlcard.agents import CFRAgent, DQNAgent
 from rlcard.models.model import Model
 
 # Root path of pretrianed models

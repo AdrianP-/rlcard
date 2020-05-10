@@ -5,11 +5,11 @@ from copy import deepcopy
 from rlcard.games.limitholdem import Game
 from rlcard.games.limitholdem import PlayerStatus
 
-from rlcard.games.nolimitholdem import Dealer
+from rlcard.games.nolimitholdem import Dealer, montecarlo_python
 from rlcard.games.nolimitholdem import Player
 from rlcard.games.nolimitholdem import Judger
 from rlcard.games.nolimitholdem import Round, Action
-
+import time
 
 class Stage(Enum):
 
@@ -35,7 +35,7 @@ class NolimitholdemGame(Game):
 
         # config players
         self.num_players = num_players
-        self.init_chips = 100
+        self.init_chips = 10
 
     def init_game(self):
         ''' Initialilze the game of Limit Texas Hold'em
@@ -188,22 +188,19 @@ class NolimitholdemGame(Game):
         state['current_player'] = self.game_pointer
         state['pot'] = self.dealer.pot
         state['stage'] = self.stage
-        # a = time.time()
-        # if player_id == 0:
-        #     simulator = montecarlo_python.MonteCarlo()
-        #     simulator.run_montecarlo(original_player_card_list=[[card[::-1] for card in state["hand"]]],
-        #                              original_table_card_list=[card[::-1] for card in state["public_cards"]],
-        #                              player_amount=2, maxRuns=1000, timeout=time.time() + 0.5, ghost_cards='', opponent_range=1, ui="")
-        #     state['equity'] = simulator.equity
-        # else:
-        state['equity'] = 1
-        max_bet = max([player.in_chips for player in self.players])
-        state['pot_odds'] = (max_bet - self.players[player_id].in_chips) / self.dealer.pot
-        state['pot_odds_decision'] = state['equity'] >= state['pot_odds']
 
-        # b = time.time()
-        # print("total time procesing: ",b-a)
-        # state['equity'] = 0.5
+        if player_id == 0:
+            simulator = montecarlo_python.MonteCarlo()
+            simulator.run_montecarlo(original_player_card_list=[[card[::-1] for card in state["hand"]]],
+                                     original_table_card_list=[card[::-1] for card in state["public_cards"]],
+                                     player_amount=2, maxRuns=1000, timeout=time.time() + 0.5, ghost_cards='', opponent_range=1, ui="")
+            state['equity'] = simulator.equity
+        else:
+            state['equity'] = 1
+
+        # max_bet = max([player.in_chips for player in self.players])
+        # state['pot_odds'] = (max_bet - self.players[player_id].in_chips) / self.dealer.pot
+        # state['pot_odds_decision'] = state['equity'] >= state['pot_odds']
 
         return state
 

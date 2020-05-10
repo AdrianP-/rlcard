@@ -39,12 +39,11 @@ with tf.Session() as sess:
     logger = Logger(log_dir)
 
     for episode in range(episode_num):
-        print(episode)
         agent.train()
         print('\rIteration {}'.format(episode), end='')
         # Evaluate the performance. Play with NFSP agents.
         if episode % evaluate_every == 0:
-            agent.save() # Save model
+            # agent.save() # Save model
             logger.log_performance(env.timestep, tournament(eval_env, evaluate_num)[0])
 
 # Close files in the logger
