@@ -13,9 +13,10 @@ from typing import Callable
 from .action_event import *
 from ..player import GinRummyPlayer
 from .move import ScoreNorthMove, ScoreSouthMove
+from .gin_rummy_error import GinRummyProgramError
 
-import rlcard.games.gin_rummy.utils.melding as melding
-import rlcard.games.gin_rummy.utils.utils as utils
+from rlcard.games.gin_rummy.utils import melding
+from rlcard.games.gin_rummy.utils import utils
 
 
 class GinRummyScorer:
@@ -42,10 +43,12 @@ def get_payoff_gin_rummy_v0(player: GinRummyPlayer, game: 'GinRummyGame') -> int
     moves = game.round.move_sheet
     if player.player_id == 0:
         score_player_move = moves[-2]
-        assert isinstance(score_player_move, ScoreNorthMove)
+        if not isinstance(score_player_move, ScoreNorthMove):
+            raise GinRummyProgramError("score_player_move must be ScoreNorthMove.")
     else:
         score_player_move = moves[-1]
-        assert isinstance(score_player_move, ScoreSouthMove)
+        if not isinstance(score_player_move, ScoreSouthMove):
+            raise GinRummyProgramError("score_player_move must be ScoreSouthMove.")
     deadwood_count = score_player_move.deadwood_count
     return deadwood_count
 
@@ -67,9 +70,9 @@ def get_payoff_gin_rummy_v1(player: GinRummyPlayer, game: 'GinRummyGame') -> flo
     # The payoff is scaled to lie between -1 and 1.
     going_out_action = game.round.going_out_action
     going_out_player_id = game.round.going_out_player_id
-    if going_out_player_id == player.player_id and type(going_out_action) is KnockAction:
+    if going_out_player_id == player.player_id and isinstance(going_out_action, KnockAction):
         payoff = 0.2
-    elif going_out_player_id == player.player_id and type(going_out_action) is GinAction:
+    elif going_out_player_id == player.player_id and isinstance(going_out_action, GinAction):
         payoff = 1
     else:
         hand = player.hand

@@ -13,8 +13,9 @@ from typing import List, Tuple
 from .utils.action_event import *
 from .utils.scorers import GinRummyScorer
 from .utils import melding
+from .utils.gin_rummy_error import GinRummyProgramError
 
-import rlcard.games.gin_rummy.utils.utils as utils
+from rlcard.games.gin_rummy.utils import utils
 
 
 class GinRummyJudge(object):
@@ -36,10 +37,9 @@ class GinRummyJudge(object):
         """
         legal_actions = []  # type: List[ActionEvent]
         last_action = self.game.get_last_action()
-        last_action_type = type(last_action)
         if last_action is None or \
-                last_action_type is DrawCardAction or \
-                last_action_type is PickUpDiscardAction:
+                isinstance(last_action, DrawCardAction) or \
+                isinstance(last_action, PickUpDiscardAction):
             current_player = self.game.get_current_player()
             going_out_deadwood_count = self.game.settings.going_out_deadwood_count
             hand = current_player.hand
@@ -51,7 +51,7 @@ class GinRummyJudge(object):
                 legal_actions = [GinAction()]
             else:
                 cards_to_discard = [card for card in hand]
-                if last_action_type is PickUpDiscardAction:
+                if isinstance(last_action, PickUpDiscardAction):
                     if not self.game.settings.is_allowed_to_discard_picked_up_card:
                         picked_up_card = self.game.round.move_sheet[-1].card
                         cards_to_discard.remove(picked_up_card)
@@ -65,14 +65,14 @@ class GinRummyJudge(object):
                                 legal_actions.extend(knock_actions)
                             else:
                                 legal_actions = knock_actions
-        elif last_action_type is DeclareDeadHandAction:
+        elif isinstance(last_action, DeclareDeadHandAction):
             legal_actions = [ScoreNorthPlayerAction()]
-        elif last_action_type is GinAction:
+        elif isinstance(last_action, GinAction):
             legal_actions = [ScoreNorthPlayerAction()]
-        elif last_action_type is DiscardAction:
+        elif isinstance(last_action, DiscardAction):
             can_draw_card = len(self.game.round.dealer.stock_pile) > self.game.settings.stockpile_dead_card_count
             if self.game.settings.max_drawn_card_count < 52:  # NOTE: this
-                drawn_card_actions = [action for action in self.game.actions if type(action) is DrawCardAction]
+                drawn_card_actions = [action for action in self.game.actions if isinstance(action, DrawCardAction)]
                 if len(drawn_card_actions) >= self.game.settings.max_drawn_card_count:
                     can_draw_card = False
             if can_draw_card:
@@ -83,11 +83,11 @@ class GinRummyJudge(object):
                 legal_actions = [DeclareDeadHandAction()]
                 if self.game.settings.is_allowed_pick_up_discard:
                     legal_actions.append(PickUpDiscardAction())
-        elif last_action_type is KnockAction:
+        elif isinstance(last_action, KnockAction):
             legal_actions = [ScoreNorthPlayerAction()]
-        elif last_action_type is ScoreNorthPlayerAction:
+        elif isinstance(last_action, ScoreNorthPlayerAction):
             legal_actions = [ScoreSouthPlayerAction()]
-        elif last_action_type is ScoreSouthPlayerAction:
+        elif isinstance(last_action, ScoreSouthPlayerAction):
             pass
         else:
             raise Exception('get_legal_actions: unknown last_action={}'.format(last_action))
@@ -100,7 +100,8 @@ def get_going_out_cards(hand: List[Card], going_out_deadwood_count: int) -> Tupl
     :param going_out_deadwood_count: int
     :return List[Card], List[Card: cards in hand that be knocked, cards in hand that can be ginned
     '''
-    assert len(hand) == 11
+    if not len(hand) == 11:
+        raise GinRummyProgramError("len(hand) is {}: should be 11.".format(len(hand)))
     meld_clusters = melding.get_meld_clusters(hand=hand)
     knock_cards, gin_cards = _get_going_out_cards(meld_clusters=meld_clusters,
                                                   hand=hand,
@@ -121,7 +122,8 @@ def _get_going_out_cards(meld_clusters: List[List[List[Card]]],
     :param going_out_deadwood_count: int
     :return List[Card], List[Card: cards in hand that be knocked, cards in hand that can be ginned
     '''
-    assert len(hand) == 11
+    if not len(hand) == 11:
+        raise GinRummyProgramError("len(hand) is {}: should be 11.".format(len(hand)))
     knock_cards = set()
     gin_cards = set()
     for meld_cluster in meld_clusters:

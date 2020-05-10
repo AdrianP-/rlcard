@@ -4,6 +4,10 @@
     Date created: 2/12/2020
 '''
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .utils.move import GinRummyMove
+
 from typing import List
 
 from rlcard.games.gin_rummy.dealer import GinRummyDealer
@@ -12,22 +16,23 @@ from .utils.action_event import DrawCardAction, PickUpDiscardAction, DeclareDead
 from .utils.action_event import DiscardAction, KnockAction, GinAction
 from .utils.action_event import ScoreNorthPlayerAction, ScoreSouthPlayerAction
 
-from .utils.move import GinRummyMove
 from .utils.move import DealHandMove
 from .utils.move import DrawCardMove, PickupDiscardMove, DeclareDeadHandMove
 from .utils.move import DiscardMove, KnockMove, GinMove
 from .utils.move import ScoreNorthMove, ScoreSouthMove
 
+from .utils.gin_rummy_error import GinRummyProgramError
+
 from .player import GinRummyPlayer
 from . import judge
 
-import rlcard.games.gin_rummy.utils.melding as melding
-import rlcard.games.gin_rummy.utils.utils as utils
+from rlcard.games.gin_rummy.utils import melding
+from rlcard.games.gin_rummy.utils import utils
 
 
 class GinRummyRound(object):
 
-    def __init__(self, dealer_id: int):
+    def __init__(self, dealer_id: int, np_random):
         ''' Initialize the round class
 
             The round class maintains the following instances:
@@ -48,15 +53,16 @@ class GinRummyRound(object):
         Args:
             dealer_id: int
         '''
+        self.np_random = np_random
         self.dealer_id = dealer_id
-        self.dealer = GinRummyDealer()
-        self.players = [GinRummyPlayer(player_id=0), GinRummyPlayer(player_id=1)]
+        self.dealer = GinRummyDealer(self.np_random)
+        self.players = [GinRummyPlayer(player_id=0, np_random=self.np_random), GinRummyPlayer(player_id=1, np_random=self.np_random)]
         self.current_player_id = (dealer_id + 1) % 2
         self.is_over = False
         self.going_out_action = None  # going_out_action: int or None
         self.going_out_player_id = None  # going_out_player_id: int or None
         self.move_sheet = []  # type: List[GinRummyMove]
-        player_dealing = GinRummyPlayer(player_id=dealer_id)
+        player_dealing = GinRummyPlayer(player_id=dealer_id, np_random=self.np_random)
         shuffled_deck = self.dealer.shuffled_deck
         self.move_sheet.append(DealHandMove(player_dealing=player_dealing, shuffled_deck=shuffled_deck))
 
@@ -68,7 +74,8 @@ class GinRummyRound(object):
         # when current_player takes DrawCardAction step, the move is recorded and executed
         # current_player keeps turn
         current_player = self.players[self.current_player_id]
-        assert len(current_player.hand) == 10
+        if not len(current_player.hand) == 10:
+            raise GinRummyProgramError("len(current_player.hand) is {}: should be 10.".format(len(current_player.hand)))
         card = self.dealer.stock_pile.pop()
         self.move_sheet.append(DrawCardMove(current_player, action=action, card=card))
         current_player.add_card_to_hand(card=card)
@@ -78,7 +85,8 @@ class GinRummyRound(object):
         # opponent knows that the card is in current_player hand
         # current_player keeps turn
         current_player = self.players[self.current_player_id]
-        assert len(current_player.hand) == 10
+        if not len(current_player.hand) == 10:
+            raise GinRummyProgramError("len(current_player.hand) is {}: should be 10.".format(len(current_player.hand)))
         card = self.dealer.discard_pile.pop()
         self.move_sheet.append(PickupDiscardMove(current_player, action, card=card))
         current_player.add_card_to_hand(card=card)
@@ -91,7 +99,8 @@ class GinRummyRound(object):
         self.move_sheet.append(DeclareDeadHandMove(current_player, action))
         self.going_out_action = action
         self.going_out_player_id = self.current_player_id
-        assert len(current_player.hand) == 10
+        if not len(current_player.hand) == 10:
+            raise GinRummyProgramError("len(current_player.hand) is {}: should be 10.".format(len(current_player.hand)))
         self.current_player_id = 0
 
     def discard(self, action: DiscardAction):
@@ -99,7 +108,8 @@ class GinRummyRound(object):
         # opponent knows that the card is no longer in current_player hand
         # current_player loses his turn and the opponent becomes the current player
         current_player = self.players[self.current_player_id]
-        assert len(current_player.hand) == 11
+        if not len(current_player.hand) == 11:
+            raise GinRummyProgramError("len(current_player.hand) is {}: should be 11.".format(len(current_player.hand)))
         self.move_sheet.append(DiscardMove(current_player, action))
         card = action.card
         current_player.remove_card_from_hand(card=card)
@@ -116,7 +126,8 @@ class GinRummyRound(object):
         self.move_sheet.append(KnockMove(current_player, action))
         self.going_out_action = action
         self.going_out_player_id = self.current_player_id
-        assert len(current_player.hand) == 11
+        if not len(current_player.hand) == 11:
+            raise GinRummyProgramError("len(current_player.hand) is {}: should be 11.".format(len(current_player.hand)))
         card = action.card
         current_player.remove_card_from_hand(card=card)
         if card in current_player.known_cards:
@@ -131,7 +142,8 @@ class GinRummyRound(object):
         self.move_sheet.append(GinMove(current_player, action))
         self.going_out_action = action
         self.going_out_player_id = self.current_player_id
-        assert len(current_player.hand) == 11
+        if not len(current_player.hand) == 11:
+            raise GinRummyProgramError("len(current_player.hand) is {}: should be 11.".format(len(current_player.hand)))
         _, gin_cards = judge.get_going_out_cards(current_player.hand, going_out_deadwood_count)
         card = gin_cards[0]
         current_player.remove_card_from_hand(card=card)
@@ -142,7 +154,8 @@ class GinRummyRound(object):
     def score_player_0(self, action: ScoreNorthPlayerAction):
         # when current_player takes ScoreNorthPlayerAction step, the move is recorded and executed
         # south becomes current player
-        assert self.current_player_id == 0
+        if not self.current_player_id == 0:
+            raise GinRummyProgramError("current_player_id is {}: should be 0.".format(self.current_player_id))
         current_player = self.get_current_player()
         best_meld_clusters = melding.get_best_meld_clusters(hand=current_player.hand)
         best_meld_cluster = [] if not best_meld_clusters else best_meld_clusters[0]
@@ -157,7 +170,8 @@ class GinRummyRound(object):
         # when current_player takes ScoreSouthPlayerAction step, the move is recorded and executed
         # south remains current player
         # the round is over
-        assert self.current_player_id == 1
+        if not self.current_player_id == 1:
+            raise GinRummyProgramError("current_player_id is {}: should be 1.".format(self.current_player_id))
         current_player = self.get_current_player()
         best_meld_clusters = melding.get_best_meld_clusters(hand=current_player.hand)
         best_meld_cluster = [] if not best_meld_clusters else best_meld_clusters[0]

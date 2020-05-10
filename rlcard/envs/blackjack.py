@@ -1,7 +1,7 @@
 import numpy as np
 
-from rlcard.envs.env import Env
-from rlcard.games.blackjack.game import BlackjackGame as Game
+from rlcard.envs import Env
+from rlcard.games.blackjack import Game
 
 
 class BlackjackEnv(Env):
@@ -72,11 +72,11 @@ class BlackjackEnv(Env):
            payoffs (list): list of payoffs
         '''
         if self.game.winner['player'] == 0 and self.game.winner['dealer'] == 1:
-            return [-1]
+            return np.array([-1])
         elif self.game.winner['dealer'] == 0 and self.game.winner['player'] == 1:
-            return [1]
+            return np.array([1])
         elif self.game.winner['player'] == 1 and self.game.winner['dealer'] == 1:
-            return [0]
+            return np.array([0])
 
     def _decode_action(self, action_id):
         ''' Decode the action for applying to the game
